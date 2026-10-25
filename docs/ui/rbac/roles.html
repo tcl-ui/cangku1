@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>角色管理 · 辰光 Agent</title>
+<link rel="stylesheet" href="rbac.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L3 7v10c0 4.4 3.6 8 9 9s9-3.6 9-9V7l-9-5z"/></svg></span><span>辰光 Agent</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">工作台</div>
+      <a class="nav-item" data-perm="dashboard:view" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>工作台</span></a>
+      <div class="nav-group">Agent 管理</div>
+      <a class="nav-item" data-perm="agent:list" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><path d="M2 14h2M20 14h2"/></svg><span>Agent 管理</span></a>
+      <div class="nav-group">模型管理</div>
+      <a class="nav-item" data-perm="model:list" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg><span>模型管理</span></a>
+      <div class="nav-group">Prompt 管理</div>
+      <a class="nav-item" data-perm="prompt:list" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8"/></svg><span>Prompt 管理</span></a>
+      <div class="nav-group">知识库</div>
+      <a class="nav-item" data-perm="knowledge:list" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg><span>知识库</span></a>
+      <div class="nav-group">工具管理</div>
+      <a class="nav-item" data-perm="tool:list" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>工具管理</span></a>
+      <div class="nav-group">对话日志</div>
+      <a class="nav-item" data-perm="conversation:list" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>对话日志</span></a>
+      <div class="nav-group">数据统计</div>
+      <a class="nav-item" data-perm="analytics:view" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg><span>数据统计</span></a>
+      <div class="nav-group">系统管理</div>
+      <a class="nav-item" data-perm="user:list" href="users.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>用户管理</span></a>
+      <a class="nav-item active" data-perm="role:list" href="roles.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>角色管理</span></a>
+      <a class="nav-item" data-perm="permission:list" href="permissions.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.8 12.2 20 3"/><path d="M17 6l2 2M14 9l2 2"/></svg><span>权限管理</span></a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" data-role="user-avatar">管</div>
+      <div class="meta"><div class="name" data-role="user-name">超级管理员</div><div class="email" data-role="user-email">admin@example.com</div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <div class="breadcrumb">系统管理<span class="sep">/</span><span class="cur">角色管理</span></div>
+      <div class="spacer"></div>
+      <div class="identity-switch">
+        <span class="hint">演示身份</span>
+        <div class="seg">
+          <button data-identity="admin" class="active">超级管理员</button>
+          <button data-identity="viewer">访客（只读）</button>
+        </div>
+      </div>
+    </header>
+    <div class="content">
+      <div class="page">
+        <div class="page-head">
+          <div class="head-row">
+            <div>
+              <h1>角色管理</h1>
+              <div class="subtitle">维护角色，并为其分配权限</div>
+            </div>
+            <button class="btn btn-primary" data-perm="role:create" onclick="RBACHtml.toast('新建角色（演示）','violet')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>新建角色
+            </button>
+          </div>
+        </div>
+
+        <div class="two-pane">
+          <div class="role-list">
+            <div class="card-head"><h2>角色</h2></div>
+            <div class="role-item active" data-role="admin" onclick="loadRole('admin')">
+              <div class="icon">超</div>
+              <div class="info"><div class="n">超级管理员</div><div class="d">系统内置，拥有全部权限</div></div>
+              <span class="count"></span>
+            </div>
+            <div class="role-item" data-role="ops" onclick="loadRole('ops')">
+              <div class="icon">运</div>
+              <div class="info"><div class="n">运营管理员</div><div class="d">平台功能全部 + 只读系统管理</div></div>
+              <span class="count"></span>
+            </div>
+            <div class="role-item" data-role="viewer" onclick="loadRole('viewer')">
+              <div class="icon">访</div>
+              <div class="info"><div class="n">访客</div><div class="d">各模块只读权限</div></div>
+              <span class="count"></span>
+            </div>
+            <div class="role-item" data-role="kb_editor" onclick="loadRole('kb_editor')">
+              <div class="icon">知</div>
+              <div class="info"><div class="n">知识库编辑</div><div class="d">仅知识库模块读写</div></div>
+              <span class="count"></span>
+            </div>
+          </div>
+
+          <div class="role-detail">
+            <div class="card-head">
+              <div>
+                <h2 id="roleInfoName">超级管理员</h2>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="roleInfoDesc">系统内置，拥有全部权限</div>
+              </div>
+            </div>
+            <div class="perm-tree" id="permTree"></div>
+            <div class="sticky-bar">
+              <span class="sel-count">已选 <b id="selCount">0</b> 项权限</span>
+              <button class="btn btn-violet" data-perm="role:assign_permissions" onclick="RBACHtml.toast('权限分配已保存','violet')">保存分配</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="rbac.js"></script>
+<script>
+var permTree = document.getElementById('permTree');
+var selCount = document.getElementById('selCount');
+
+function updateCount(codes) { selCount.textContent = codes.length; }
+
+function loadRole(code) {
+  var role = RBAC.roles.find(function (r) { return r.code === code; });
+  if (!role) return;
+  document.querySelectorAll('.role-item').forEach(function (el) {
+    el.classList.toggle('active', el.getAttribute('data-role') === code);
+  });
+  var sel = role.permissions.slice();
+  RBACHtml.renderPermTree(permTree, sel, updateCount);
+  updateCount(sel);
+  document.getElementById('roleInfoName').textContent = role.name;
+  document.getElementById('roleInfoDesc').textContent = role.desc;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.role-item').forEach(function (el) {
+    var role = RBAC.roles.find(function (r) { return r.code === el.getAttribute('data-role'); });
+    if (role) el.querySelector('.count').textContent = role.permissions.length + ' 项';
+  });
+  loadRole('admin');
+});
+</script>
+</body>
+</html>
