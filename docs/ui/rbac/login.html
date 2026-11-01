@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · 辰光 Agent</title>
+<link rel="stylesheet" href="rbac.css">
+</head>
+<body>
+<div class="login">
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L3 7v10c0 4.4 3.6 8 9 9s9-3.6 9-9V7l-9-5z"/></svg></span>
+      <div><div class="bn">辰光 Agent</div><div class="bsub">Enterprise AI 管理平台</div></div>
+    </div>
+    <h2>登录</h2>
+    <div class="lead">登录后将按你的角色加载对应权限与菜单。</div>
+
+    <form onsubmit="event.preventDefault(); location.href='dashboard.html';">
+      <div class="field">
+        <label>用户名</label>
+        <input type="text" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input type="password" placeholder="请输入密码" autocomplete="current-password">
+      </div>
+      <div class="field">
+        <label>验证码</label>
+        <div class="captcha-row">
+          <input type="text" placeholder="输入右侧验证码">
+          <div class="captcha-box">A3BX</div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:10px 0;margin-top:6px">登录</button>
+    </form>
+    <div class="login-foot">登录即代表同意平台使用规范</div>
+  </div>
+</div>
+</body>
+</html>
