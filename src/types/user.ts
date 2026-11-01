@@ -8,7 +8,10 @@ export interface UserRead {
   last_login?: string | null
   created_at?: string
   updated_at?: string
+  /** 角色 code 列表（展示用） */
   roles?: string[]
+  /** 角色 id 列表（分配角色用，mock 数据携带） */
+  role_ids?: number[]
 }
 
 /** 创建用户 */

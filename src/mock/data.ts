@@ -1,81 +1,88 @@
 import type { CurrentUser, PermissionRead, RoleRead, UserRead } from '@/types'
+import {
+  ALL_PERMISSION_CODES,
+  CODE_TO_ID,
+  PERMISSION_GROUPS,
+  READ_ONLY_PERMISSION_CODES,
+  codesOfIds,
+  idsOfCodes,
+  permissionNameOf,
+} from '@/constants/rbac.catalog'
 
 /** Mock 用户：在 UserRead 基础上附加内部字段 */
 export interface MockUser extends UserRead {
   password: string
-  role_ids: number[]
 }
 
 /** Mock 角色：在 RoleRead 基础上记录所分配的权限 id */
 export interface MockRole extends RoleRead {
   permission_ids: number[]
+  is_system?: boolean
 }
 
-let autoId = 100
+let autoId = 1000
 
-/** 权限码目录（取自 RBAC 需求基线，仅取本框架涉及的子集） */
-export const mockPermissions: PermissionRead[] = [
-  { id: autoId++, code: 'dashboard:view', name: '工作台', description: '查看数据大盘' },
-  { id: autoId++, code: 'user:list', name: '用户列表', description: '分页搜索用户' },
-  { id: autoId++, code: 'user:view', name: '用户详情', description: '查看用户及其角色' },
-  { id: autoId++, code: 'user:create', name: '创建用户', description: '创建用户' },
-  { id: autoId++, code: 'user:update', name: '编辑用户', description: '编辑用户' },
-  { id: autoId++, code: 'user:delete', name: '删除用户', description: '删除用户' },
-  { id: autoId++, code: 'user:assign_roles', name: '分配角色', description: '给用户分配角色' },
-  { id: autoId++, code: 'role:list', name: '角色列表', description: '查看角色列表' },
-  { id: autoId++, code: 'role:view', name: '角色详情', description: '查看角色及其权限' },
-  { id: autoId++, code: 'role:create', name: '创建角色', description: '创建角色' },
-  { id: autoId++, code: 'role:update', name: '编辑角色', description: '编辑角色' },
-  { id: autoId++, code: 'role:delete', name: '删除角色', description: '删除角色' },
-  { id: autoId++, code: 'role:assign_permissions', name: '分配权限', description: '给角色分配权限' },
-  { id: autoId++, code: 'permission:list', name: '权限列表', description: '查看权限列表' },
-  { id: autoId++, code: 'permission:view', name: '权限详情', description: '查看权限详情' },
-  { id: autoId++, code: 'permission:create', name: '创建权限', description: '创建权限' },
-  { id: autoId++, code: 'permission:update', name: '编辑权限', description: '编辑权限' },
-  { id: autoId++, code: 'permission:delete', name: '删除权限', description: '删除权限' },
-  { id: autoId++, code: 'agent:list', name: 'Agent 列表', description: '查看 Agent 列表' },
-  { id: autoId++, code: 'model:list', name: '模型列表', description: '查看模型列表' },
-]
+/**
+ * 权限码目录（67 项，取自 RBAC 需求基线 4.2 / 原型 rbac.js）。
+ * id 采用目录顺序（1 起），与 CODE_TO_ID 保持一致。
+ */
+export const mockPermissions: PermissionRead[] = PERMISSION_GROUPS.flatMap((group) =>
+  group.perms.map((p): PermissionRead => ({
+    id: CODE_TO_ID.get(p.code) as number,
+    code: p.code,
+    name: p.name,
+    description: p.desc,
+  })),
+)
 
-const allPermissionCodes = mockPermissions.map((p) => p.code)
-
-/** Mock 角色 */
+/** 内置角色：超管（全量）、运营、访客（只读）、知识库编辑 */
 export const mockRoles: MockRole[] = [
   {
     id: 1,
     code: 'superadmin',
     name: '超级管理员',
-    description: '拥有平台全部权限',
-    permission_ids: mockPermissions.map((p) => p.id),
-    permissions: allPermissionCodes,
+    description: '系统内置，拥有全部权限（is_superuser 绕过）',
+    is_system: true,
+    permission_ids: idsOfCodes(ALL_PERMISSION_CODES),
+    permissions: [...ALL_PERMISSION_CODES].sort(),
   },
   {
     id: 2,
     code: 'ops',
     name: '运营管理员',
-    description: '平台功能全部 + 系统管理只读',
-    permission_ids: mockPermissions
-      .filter((p) => p.code !== 'user:create' && p.code !== 'user:delete' && p.code !== 'user:update')
-      .map((p) => p.id),
-    permissions: mockPermissions
-      .filter((p) => p.code !== 'user:create' && p.code !== 'user:delete' && p.code !== 'user:update')
-      .map((p) => p.code),
+    description: '平台功能全部 + 只读系统管理',
+    is_system: true,
+    permission_ids: idsOfCodes(
+      ALL_PERMISSION_CODES.filter(
+        (c) => !/^(user|role|permission):(create|update|delete|assign)/.test(c),
+      ),
+    ),
+    permissions: ALL_PERMISSION_CODES.filter(
+      (c) => !/^(user|role|permission):(create|update|delete|assign)/.test(c),
+    ).sort(),
   },
   {
     id: 3,
     code: 'viewer',
-    name: '访客（只读）',
+    name: '访客',
     description: '各模块只读权限',
-    permission_ids: mockPermissions
-      .filter((p) => p.code.endsWith(':list') || p.code === 'dashboard:view')
-      .map((p) => p.id),
-    permissions: mockPermissions
-      .filter((p) => p.code.endsWith(':list') || p.code === 'dashboard:view')
-      .map((p) => p.code),
+    is_system: true,
+    permission_ids: idsOfCodes(READ_ONLY_PERMISSION_CODES),
+    permissions: [...READ_ONLY_PERMISSION_CODES].sort(),
+  },
+  {
+    id: 4,
+    code: 'kb_editor',
+    name: '知识库编辑',
+    description: '仅知识库模块读写',
+    permission_ids: idsOfCodes(
+      ALL_PERMISSION_CODES.filter((c) => c.startsWith('knowledge:')),
+    ),
+    permissions: ALL_PERMISSION_CODES.filter((c) => c.startsWith('knowledge:')).sort(),
   },
 ]
 
-/** Mock 用户 */
+/** Mock 用户（token 简化为 username，密码 = username + 123） */
 export const mockUsers: MockUser[] = [
   {
     id: 1,
@@ -145,7 +152,7 @@ export const mockUsers: MockUser[] = [
   },
 ]
 
-/** 根据角色 id 列表计算权限码集合 */
+/** 根据角色 id 列表计算权限码集合（去重、排序） */
 export function resolvePermissions(roleIds: number[]): string[] {
   const codes = new Set<string>()
   for (const roleId of roleIds) {
@@ -155,9 +162,10 @@ export function resolvePermissions(roleIds: number[]): string[] {
   return Array.from(codes).sort()
 }
 
-/** 组装 CurrentUser（登录 / /me 均返回该结构） */
+/** 组装 CurrentUser（登录 / /me 均返回该结构，与后端 CurrentUserRead 同构） */
 export function buildCurrentUser(user: MockUser): CurrentUser {
-  const roleCodes = user.role_ids
+  const roleIds = user.role_ids ?? []
+  const roleCodes = roleIds
     .map((id) => mockRoles.find((r) => r.id === id)?.code)
     .filter((c): c is string => Boolean(c))
 
@@ -168,11 +176,13 @@ export function buildCurrentUser(user: MockUser): CurrentUser {
     is_active: user.is_active,
     is_superuser: user.is_superuser,
     roles: roleCodes,
-    permissions: user.is_superuser ? allPermissionCodes : resolvePermissions(user.role_ids),
+    permissions: user.is_superuser
+      ? [...ALL_PERMISSION_CODES].sort()
+      : resolvePermissions(roleIds),
   }
 }
 
-/** 序列化用户（剔除 password 等内部字段） */
+/** 序列化用户（保留 role_ids 供前端分配角色回填，剔除 password） */
 export function toUserRead(user: MockUser): UserRead {
   return {
     id: user.id,
@@ -184,6 +194,7 @@ export function toUserRead(user: MockUser): UserRead {
     created_at: user.created_at,
     updated_at: user.updated_at,
     roles: user.roles,
+    role_ids: user.role_ids,
   }
 }
 
@@ -196,4 +207,25 @@ export function toRoleRead(role: MockRole): RoleRead {
     description: role.description,
     permissions: role.permissions,
   }
+}
+
+/** 新建权限时分配的 id（避开目录顺序段，避免与内置码冲突） */
+export function nextPermissionId(): number {
+  autoId += 1
+  return autoId
+}
+
+/** 新建权限码校验：格式 `{resource}:{action}` 且未被目录占用 */
+export function assertNewPermissionCode(code: string): void {
+  if (!/^[a-z_]+:[a-z_]+$/.test(code)) {
+    throw new Error('权限编码格式须为 模块:操作（小写）')
+  }
+  if (ALL_PERMISSION_CODES.includes(code)) {
+    throw new Error(`权限编码 ${code} 已内置`)
+  }
+}
+
+export { codesOfIds, idsOfCodes }
+export function nameOf(code: string): string {
+  return permissionNameOf(code)
 }

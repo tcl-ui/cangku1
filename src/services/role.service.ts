@@ -1,5 +1,11 @@
 import * as roleApi from '@/apis/role.api'
-import type { PageParams, PageResult, RoleCreate, RoleRead, RoleUpdate } from '@/types'
+import type {
+  PageParams,
+  PageResult,
+  RoleCreate,
+  RoleRead,
+  RoleUpdate,
+} from '@/types'
 
 /** 角色业务：分页归一化 + 入参校验 */
 export const roleService = {
@@ -9,6 +15,11 @@ export const roleService = {
       page_size: params.page_size ?? 10,
       keyword: params.keyword,
     })
+  },
+
+  /** 全量角色（分配角色/权限树用） */
+  getAllRoles(): Promise<RoleRead[]> {
+    return roleApi.listRoles()
   },
 
   getRole(id: number): Promise<RoleRead> {

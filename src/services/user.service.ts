@@ -18,6 +18,11 @@ export const userService = {
     return userApi.searchUsers(normalizeParams(params))
   },
 
+  /** 全量用户（分配角色弹窗等场景） */
+  getAllUsers(): Promise<UserRead[]> {
+    return userApi.listUsers()
+  },
+
   getUser(id: number): Promise<UserRead> {
     return userApi.getUser(id)
   },

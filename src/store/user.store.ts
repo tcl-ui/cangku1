@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { PageParams, UserRead } from '@/types'
+import type { PageParams, UserCreate, UserRead } from '@/types'
 import { userService } from '@/services/user.service'
 
-/** 用户列表数据状态：分页 + 加载态 + 错误态 */
+/** 用户列表数据状态：分页 + 加载态 + 错误态 + 写操作 */
 export const useUserStore = defineStore('user', () => {
   const users = ref<UserRead[]>([])
   const total = ref(0)
@@ -31,6 +31,18 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  async function create(payload: UserCreate): Promise<UserRead> {
+    const created = await userService.createUser(payload)
+    await fetchUsers({ keyword: '' })
+    return created
+  }
+
+  async function assignRoles(id: number, roleIds: number[]): Promise<UserRead> {
+    const updated = await userService.assignRoles(id, roleIds)
+    await fetchUsers()
+    return updated
+  }
+
   async function removeUser(id: number): Promise<void> {
     await userService.deleteUser(id)
     await fetchUsers()
@@ -44,6 +56,8 @@ export const useUserStore = defineStore('user', () => {
     loading,
     error,
     fetchUsers,
+    create,
+    assignRoles,
     removeUser,
   }
 })

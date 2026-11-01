@@ -9,10 +9,12 @@ import type {
   UserRead,
 } from '@/types'
 import {
+  assertNewPermissionCode,
   buildCurrentUser,
   mockPermissions,
   mockRoles,
   mockUsers,
+  nextPermissionId,
   toRoleRead,
   toUserRead,
   type MockRole,
@@ -266,10 +268,18 @@ export function handleMockRequest(config: InternalAxiosRequestConfig): unknown {
     return ok(mockPermissions)
   }
   if (method === 'post' && path === '/permissions') {
+    const code = String(body.code ?? '')
+    const name = String(body.name ?? '')
+    try {
+      assertNewPermissionCode(code)
+    } catch (e) {
+      return fail(400, e instanceof Error ? e.message : '权限编码不合法')
+    }
+    if (!name) return fail(400, '权限名称不能为空')
     const permission: PermissionRead = {
-      id: Math.max(...mockPermissions.map((p) => p.id), 0) + 1,
-      code: String(body.code ?? ''),
-      name: String(body.name ?? ''),
+      id: nextPermissionId(),
+      code,
+      name,
       description: body.description ? String(body.description) : undefined,
     }
     mockPermissions.push(permission)

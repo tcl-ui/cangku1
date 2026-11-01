@@ -1,4 +1,6 @@
 import axios, {
+  AxiosError,
+  AxiosResponse,
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios'
@@ -11,6 +13,41 @@ export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
 
 /** 是否启用 Mock（默认 true，便于无后端开发调试） */
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
+
+/** 携带业务错误码的请求错误（code 为后端返回的业务码，如 401/403/404） */
+export class ApiError extends Error {
+  code: number
+
+  constructor(message: string, code: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.code = code
+  }
+}
+
+/** 解包后端 { code, message, data } 信封；非 200 抛出 ApiError */
+export function unwrapEnvelope<T>(response: AxiosResponse<unknown>): T {
+  const body = (response.data ?? {}) as Partial<ApiResponse<T>>
+
+  // 若响应体不是信封结构（如直接返回数据），原样返回
+  if (body.code === undefined && body.data === undefined) {
+    return response.data as T
+  }
+
+  if (body.code !== 200) {
+    const message = body.message ?? '请求失败'
+    // 401：token 失效，清除并跳转登录页。
+    if (body.code === 401) {
+      tokenStorage.remove()
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login'
+      }
+    }
+    throw new ApiError(message, body.code ?? 500)
+  }
+
+  return body.data as T
+}
 
 /** axios 实例：统一 baseURL、超时、请求头 */
 export const http: AxiosInstance = axios.create({
@@ -33,41 +70,16 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config
 })
 
-// 响应拦截：统一解包 { code, message, data }；非 200 抛业务错误。
+// 响应拦截：成功时解包信封并返回业务数据（与 http.get<T, T> 的 R 泛型对齐）；
+// 错误时归一化为 ApiError。
 http.interceptors.response.use(
-  (response) => {
-    const body = response.data as ApiResponse<unknown> | unknown
-
-    if (
-      body &&
-      typeof body === 'object' &&
-      'code' in body &&
-      'message' in body &&
-      'data' in body
-    ) {
-      const envelope = body as ApiResponse<unknown>
-
-      if (envelope.code !== 200) {
-        const error = new Error(envelope.message || '请求失败') as Error & {
-          code?: number
-        }
-        error.code = envelope.code
-
-        // 401：token 失效，清除并跳转登录页。
-        if (envelope.code === 401) {
-          tokenStorage.remove()
-          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-            window.location.href = '/login'
-          }
-        }
-
-        return Promise.reject(error)
-      }
-
-      response.data = envelope.data
+  (response) => unwrapEnvelope(response) as unknown as AxiosResponse,
+  (error: AxiosError<{ code?: number; message?: string }>) => {
+    if (error.response) {
+      const body = error.response.data
+      const code = body?.code ?? error.response.status
+      return Promise.reject(new ApiError(body?.message ?? error.message, code))
     }
-
-    return response
+    return Promise.reject(new ApiError(error.message, 0))
   },
-  (error) => Promise.reject(error),
 )
